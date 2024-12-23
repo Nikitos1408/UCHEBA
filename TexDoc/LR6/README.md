@@ -6,7 +6,9 @@
 2. Пошаговая установка
 1.	Подготовка среды: Убедитесь, что на персональном компьютере установлен Docker.
 2.	Запуск контейнера OpenProject: Для запуска OpenProject был использован следующий Docker-контейнер:
+```
 docker run -it -p 8080:80 -e OPENPROJECT_SECRET_KEY_BASE=secret -e OPENPROJECT_HOST__NAME=localhost:8080 -e OPENPROJECT_HTTPS=false -e OPENPROJECT_DEFAULT__LANGUAGE=en openproject/openproject:15
+```
 3.	Ожидание запуска: Docker загрузил образ openproject/openproject:15 и запустил контейнер. Процесс первого запуска может занять несколько минут.
  
 4.	Проверка доступности: После запуска OpenProject стал доступен по адресу http://localhost:8080 в веб-браузере
