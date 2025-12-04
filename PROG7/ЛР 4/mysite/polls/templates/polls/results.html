@@ -1,0 +1,17 @@
+{% extends "polls/base.html" %}
+
+{% block title %}Результаты{% endblock %}
+
+{% block content %}
+  <h2>{{ question.question_text }}</h2>
+
+  <ul>
+  {% for choice in question.choice_set.all %}
+      <li>{{ choice.choice_text }} — {{ choice.votes }} голос{{ choice.votes|pluralize }}</li>
+  {% endfor %}
+  </ul>
+
+  <p>
+    <a href="{% url 'polls:detail' question.id %}">Проголосовать ещё раз</a>
+  </p>
+{% endblock %}
