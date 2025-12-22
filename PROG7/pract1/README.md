@@ -6,5 +6,6 @@
     - СMD: `environment/bin/activate.bat`
 3. Установите зависимости:
     `pip install -r requirements.txt`
+4. Запустите проект
 
 ## также я удалил db и secret key из проекта
