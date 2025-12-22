@@ -1,0 +1,181 @@
+{% extends 'polls/base.html' %}
+
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block content %}
+<style>
+    a.question-link:link, a.question-link:visited {
+        background-color: #f44336;
+        color: white;
+        padding: 15px 25px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    a.question-link:hover, a.question-link:active {
+        background-color: red;
+    }
+
+    hr.dates-header {
+        height: 4px;
+        background-color: black;
+        border: none;
+    }
+    hr.questions-separator {
+        height: 2px;
+        background-color: brown;
+        border: none;
+    }  
+</style>
+<div class="container">
+    <div class="row">
+        <div class="col-md-5" style="border-right: 1px solid #ccc;">
+            <h2>Querstion List</h2>
+            
+            <div class="form-group">
+                <label for="from-date">From:</label>
+                <input type="date" class="form-control" id="from-date" required>
+            </div>
+            <div class="form-group">
+                <label for="to-date">To:</label>
+                <input type="date" class="form-control" id="to-date" required>
+            </div>
+            {% csrf_token %}
+            <button class="btn btn-primary mt-2" id="submit-btn">Search</button>
+            <hr class="dates-header">
+            <hr class="dates-header">
+            <div id="question-list"></div>
+        </div>
+        <div class="col-md-7">
+            <h2>Question Statistics</h2>
+            <div id="stats-container"></div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+// Функция для обновления контейнера со статистикой
+function updateQuestionStatsContainer(data) {
+    let container = $('#stats-container'); // Контейнер DIV, в котором будет отображаться статистика
+
+    // Очистка контейнера перед добавлением новой статистики
+    container.empty();
+
+    // Вывод общего числа голосов
+    let totalVotes = $('<p>').text('Total Votes: ' + data.total_votes);
+    container.append(totalVotes);
+
+    // Вывод статистики по каждому выбору
+    let choices = data.choices;
+    let choicesList = $('<ul>');
+    choices.forEach(function(choice) {
+        let choiceItem = $('<li>').text(choice.choice_text + ' (' + choice.percentage + '%)');
+        choicesList.append(choiceItem);
+    });
+    container.append(choicesList);
+
+    // Вывод наиболее и наименее популярного выбора
+    let mostPopularChoice = $('<p>').text('Most Popular Choice: ' + data.most_popular_choice);
+    let leastPopularChoice = $('<p>').text('Least Popular Choice: ' + data.least_popular_choice);
+    container.append(mostPopularChoice);
+    container.append(leastPopularChoice);
+
+    // Вывод SVG изображения
+    let svgImage = $('<div>').html(data.histogram_svg);
+    container.append(svgImage);
+}
+
+function requestQuestionStats(id) {
+    dummyQuestionStatsUrl = '{% url 'polls:statistics-question-stats' '999999999999' %}';
+    realQuestionStatsUrl = dummyQuestionStatsUrl.replace('999999999999', id)
+    $.ajax({
+        url: realQuestionStatsUrl,
+        type: 'GET',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function(data) {
+            updateQuestionStatsContainer(data);
+        },
+        error: function() {
+            console.log('Error occurred while fetching question stats');
+        }
+    });
+}
+
+$(document).ready(function() {
+
+    // =================================================================
+    // Задаем начальные значения
+    let today = new Date();
+    let fromDate = new Date(today);
+    fromDate.setDate(today.getDate() - 60);
+    let toDate = today.toISOString().split('T')[0]; // Преобразуем в формат yyyy-mm-dd
+
+    // Устанавливаем начальные значения в поля
+    $('#from-date').val(fromDate.toISOString().split('T')[0]);
+    $('#to-date').val(toDate);
+
+    // Оставляем остальной код без изменений
+    $('#submit-btn').click(function() {
+        var fromDate = $('#from-date').val();
+        var toDate = $('#to-date').val();
+
+        var data = {
+            'publication-dates': {
+                'from': fromDate,
+                'to': toDate
+            }
+        };
+
+        $.ajax({
+            url: '{% url 'polls:statistics-question-list' %}',
+            type: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            success: function(response) {
+                let questions = response.questions;
+
+                // Очищаем список перед добавлением новых вопросов
+                $('#question-list').empty();
+
+                // Генерируем HTML для каждого вопроса и добавляем их в список
+                questions.forEach(function(question) {
+                    let questionHtml = '<div class="question">';
+                    questionHtml += `<h6><a id="question-${question.id}" class="question-link" href="#" onclick="requestQuestionStats(${question.id}); return false;">${question.question_text}</a></h6>`;
+
+                    var formatOptions = {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        timeZoneName: 'short'
+                    };
+                    let pubDate = new Date(question.pub_date);
+                    var formattedDate = pubDate.toLocaleString('{{ LANGUAGE_CODE }}', formatOptions);
+                    questionHtml += '<div style="background-color: white; color: black; padding: 10px;"><p>' + formattedDate + '</p></div>';
+                    
+                    
+                    questionHtml += '</div><hr class="questions-separator">';
+
+                    $('#question-list').append(questionHtml);
+                });
+            },
+            error: function(xhr, status, error) {
+                // Handle error response here
+            }
+        });
+    });
+
+});
+</script>
+{% endblock %}
