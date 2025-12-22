@@ -1,20 +1,14 @@
-# Настройка виртуального окружения
-1. Создайте в данном каталоге виртуально окружение Python:
-   `python -m venv environment`
-2. Активируйте данное окружение:
-    - Windows CMD: `environment/bin/activate.bat`
-    - Windows PowerShell: `environment/bin/activate.ps1` 
-    - Bash Shell: `source environment/bin/activate`
-    - Csh Sell: `source environment/bin/activate.csh`
-    - Fish Shell`source environment/bin/activate.fish`
-3. Установите зависимости:
-    `pip install -r requirements.txt`
+# Выполнил Угарин Никита Александрович
 
-# Super-user и админ-интерфейс
-1. Админ-интерфейс: http://127.0.0.1:8000/admin/
-2. Учётная запись:
-    - Login: admin
-    - Password: changeit
-
-
-FYI: https://djangowaves.com/tips-tricks/how-to-reset-the-django-admin-password/
+## Запуск проекта
+1. Установить зависимости (из корня проекта, где requirements.txt):
+   - `pip install -r requirements.txt`
+2. Применить миграции (если ещё не делали):
+   - `cd mysite`
+   - `python manage.py migrate`
+3. Запустить сервер разработки:
+   - `python manage.py runserver`
+4. Приложение будет доступно по адресу: http://127.0.0.1:8000/.
+5. Страница поиска и статистики голосований
+   - URL страницы: http://127.0.0.1:8000/ → кнопка/ссылка на статистику, либо напрямую http://127.0.0.1:8000/statistics.
+   - Страница statistics.html позволяет искать голосования по датам и смотреть подробную статистику по каждому голосованию без авторизации.
